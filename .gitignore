@@ -8,5 +8,4 @@ __pycache__/
 
 # SQLite local databases
 *.db
-instance/
 instance/*.db

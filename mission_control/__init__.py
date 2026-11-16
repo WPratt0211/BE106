@@ -2,6 +2,7 @@ from flask import Flask
 from config import config_by_name
 from mission_control.extensions import db, migrate
 from mission_control.routes import main_bp
+from mission_control import models
 
 def create_app(config_name="development"):
     app = Flask(__name__)

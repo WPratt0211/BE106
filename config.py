@@ -2,7 +2,9 @@ import os
 
 class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-32-bytes-long-super-secure")
+    JWT_SECRET = os.getenv("JWT_SECRET", "dev-jwt-secret-key-32-bytes-minimum-length")
+    JWT_EXPIRATION_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES", "60"))
     APP_MODE = os.getenv("APP_MODE", "default-mode")
 
 class DevelopmentConfig(Config):

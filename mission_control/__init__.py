@@ -2,6 +2,7 @@ from flask import Flask
 from config import config_by_name
 from mission_control.extensions import db, migrate
 from mission_control.routes import main_bp
+from mission_control.auth import auth_bp
 from mission_control import models
 
 def create_app(config_name="development"):
@@ -14,6 +15,8 @@ def create_app(config_name="development"):
     migrate.init_app(app, db)
 
     app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp)
 
     return app
+
 

@@ -177,10 +177,10 @@ def login():
         "token": token,
         "user": {
             "id": user.id,
-            "email": user.email,
-            "role": user.role
+            "email": user.email
         }
     }), 200
+
 
 ALLOWED_PROFILE_FIELDS = {"email"}
 
@@ -252,4 +252,34 @@ def update_profile():
         "email": user.email,
         "created_at": user.created_at.isoformat() if user.created_at else None
     }), 200
+
+@auth_bp.route("/users/<int:user_id>", methods=["GET"])
+@auth_bp.route("/auth/users/<int:user_id>", methods=["GET"])
+@jwt_required
+def get_user(user_id):
+    if user_id != g.current_user.id:
+        return jsonify({
+            "code": "FORBIDDEN",
+            "message": "Cannot access another user's profile"
+        }), 403
+
+    user = g.current_user
+    return jsonify({
+        "id": user.id,
+        "email": user.email,
+        "created_at": user.created_at.isoformat() if user.created_at else None
+    }), 200
+
+@auth_bp.route("/users/<int:user_id>", methods=["PATCH"])
+@auth_bp.route("/auth/users/<int:user_id>", methods=["PATCH"])
+@jwt_required
+def update_user(user_id):
+    if user_id != g.current_user.id:
+        return jsonify({
+            "code": "FORBIDDEN",
+            "message": "Cannot modify another user's profile"
+        }), 403
+
+    return update_profile()
+
 

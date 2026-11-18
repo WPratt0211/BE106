@@ -14,5 +14,10 @@ class User(db.Model):
         nullable=False,
     )
 
+    @property
+    def role(self):
+        return "flight_director"
+
     def __repr__(self):
         return f"<User {self.email}>"
+

@@ -182,6 +182,8 @@ def login():
         }
     }), 200
 
+ALLOWED_PROFILE_FIELDS = {"email"}
+
 @auth_bp.route("/profile", methods=["GET"])
 @auth_bp.route("/auth/profile", methods=["GET"])
 @jwt_required
@@ -190,6 +192,64 @@ def profile():
     return jsonify({
         "id": user.id,
         "email": user.email,
-        "role": user.role,
         "created_at": user.created_at.isoformat() if user.created_at else None
     }), 200
+
+@auth_bp.route("/profile", methods=["PATCH"])
+@auth_bp.route("/auth/profile", methods=["PATCH"])
+@jwt_required
+def update_profile():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({
+            "code": "INVALID_JSON",
+            "message": "Request body must be a valid JSON object"
+        }), 400
+
+    disallowed_fields = set(data.keys()) - ALLOWED_PROFILE_FIELDS
+    if disallowed_fields:
+        return jsonify({
+            "code": "INVALID_FIELD",
+            "message": f"Modification of fields not permitted: {', '.join(sorted(disallowed_fields))}"
+        }), 400
+
+    if not data:
+        return jsonify({
+            "code": "VALIDATION_ERROR",
+            "message": "At least one valid field must be provided for update"
+        }), 400
+
+    user = g.current_user
+
+    if "email" in data:
+        new_email = data["email"]
+        if not isinstance(new_email, str):
+            return jsonify({
+                "code": "VALIDATION_ERROR",
+                "message": "email must be a string"
+            }), 400
+
+        new_email = new_email.strip()
+        if len(new_email) < 3 or len(new_email) > 254:
+            return jsonify({
+                "code": "VALIDATION_ERROR",
+                "message": "email must be between 3 and 254 characters"
+            }), 400
+
+        if new_email != user.email:
+            existing_user = User.query.filter_by(email=new_email).first()
+            if existing_user:
+                return jsonify({
+                    "code": "DUPLICATE_EMAIL",
+                    "message": "email is already registered"
+                }), 409
+            user.email = new_email
+
+    db.session.commit()
+
+    return jsonify({
+        "id": user.id,
+        "email": user.email,
+        "created_at": user.created_at.isoformat() if user.created_at else None
+    }), 200
+

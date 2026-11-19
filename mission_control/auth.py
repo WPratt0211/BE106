@@ -62,6 +62,20 @@ def jwt_required(f):
 
     return decorated_function
 
+def admin_required(f):
+    @functools.wraps(f)
+    @jwt_required
+    def decorated_function(*args, **kwargs):
+        if g.current_user.role != "admin":
+            return jsonify({
+                "code": "FORBIDDEN",
+                "message": "Admin access required"
+            }), 403
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 @auth_bp.route("/register", methods=["POST"])
 @auth_bp.route("/auth/register", methods=["POST"])
 def register():
@@ -252,5 +266,22 @@ def update_profile():
         "email": user.email,
         "created_at": user.created_at.isoformat() if user.created_at else None
     }), 200
+
+@auth_bp.route("/admin/users", methods=["GET"])
+@admin_required
+def admin_list_users():
+    users = User.query.all()
+    return jsonify({
+        "users": [
+            {
+                "id": u.id,
+                "email": u.email,
+                "role": u.role,
+                "created_at": u.created_at.isoformat() if u.created_at else None
+            }
+            for u in users
+        ]
+    }), 200
+
 
 

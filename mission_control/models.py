@@ -14,9 +14,7 @@ class User(db.Model):
         nullable=False,
     )
 
-    @property
-    def role(self):
-        return "flight_director"
+    role = db.Column(db.String(50), nullable=False, default="user", server_default="user")
 
     def __repr__(self):
         return f"<User {self.email}>"

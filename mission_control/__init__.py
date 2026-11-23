@@ -3,6 +3,7 @@ from config import config_by_name
 from mission_control.extensions import db, migrate
 from mission_control.routes import main_bp
 from mission_control.auth import auth_bp
+from mission_control.missions import missions_bp
 from mission_control import models
 
 def create_app(config_name="development"):
@@ -16,7 +17,9 @@ def create_app(config_name="development"):
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(missions_bp)
 
     return app
+
 
 

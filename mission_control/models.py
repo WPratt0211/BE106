@@ -15,6 +15,7 @@ class User(db.Model):
     )
 
     role = db.Column(db.String(50), nullable=False, default="user", server_default="user")
+    missions = db.relationship("Mission", back_populates="owner", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User {self.email}>"
@@ -25,7 +26,9 @@ class Mission(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    owner = db.relationship("User", back_populates="missions")
     title = db.Column(db.String(150), nullable=False)
+
     destination = db.Column(db.String(150), nullable=False)
     launch_date = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.String(50), nullable=False, default="planned", server_default="planned")

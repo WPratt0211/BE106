@@ -7,6 +7,9 @@ from mission_control.auth import jwt_required
 missions_bp = Blueprint("missions", __name__, url_prefix="/missions")
 
 ALLOWED_UPDATE_FIELDS = {"title", "destination", "launch_date", "status"}
+DEFAULT_PAGE = 1
+DEFAULT_PER_PAGE = 10
+MAX_PER_PAGE = 50
 
 def serialize_mission(mission):
     return {
@@ -82,11 +85,45 @@ def create_mission():
 @missions_bp.route("", methods=["GET"])
 @jwt_required
 def list_missions():
-    # User-scoped list: caller only sees their own missions
-    user_missions = Mission.query.filter_by(user_id=g.current_user.id).order_by(Mission.id.asc()).all()
+    page_param = request.args.get("page", str(DEFAULT_PAGE))
+    try:
+        page = int(page_param)
+        if page < 1:
+            raise ValueError()
+    except (ValueError, TypeError):
+        return jsonify({
+            "code": "VALIDATION_ERROR",
+            "message": "page must be a positive integer"
+        }), 400
+
+    per_page_param = request.args.get("per_page", str(DEFAULT_PER_PAGE))
+    try:
+        per_page = int(per_page_param)
+        if per_page < 1:
+            raise ValueError()
+    except (ValueError, TypeError):
+        return jsonify({
+            "code": "VALIDATION_ERROR",
+            "message": "per_page must be a positive integer"
+        }), 400
+
+    if per_page > MAX_PER_PAGE:
+        return jsonify({
+            "code": "VALIDATION_ERROR",
+            "message": f"per_page cannot exceed {MAX_PER_PAGE}"
+        }), 400
+
+    # User-scoped list: caller only sees their own missions, stably ordered by ID
+    query = Mission.query.filter_by(user_id=g.current_user.id).order_by(Mission.id.asc())
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
     return jsonify({
-        "missions": [serialize_mission(m) for m in user_missions],
-        "count": len(user_missions)
+        "missions": [serialize_mission(m) for m in pagination.items],
+        "count": len(pagination.items),
+        "page": page,
+        "per_page": per_page,
+        "total": pagination.total,
+        "pages": pagination.pages
     }), 200
 
 @missions_bp.route("/<int:mission_id>", methods=["GET"])

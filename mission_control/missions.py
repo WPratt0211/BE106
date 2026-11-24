@@ -135,7 +135,7 @@ def update_mission(mission_id):
     disallowed_fields = set(data.keys()) - ALLOWED_UPDATE_FIELDS
     if disallowed_fields:
         return jsonify({
-            "code": "INVALID_FIELD",
+            "code": "VALIDATION_ERROR",
             "message": f"Modification of fields not permitted: {', '.join(sorted(disallowed_fields))}"
         }), 400
 

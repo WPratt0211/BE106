@@ -76,7 +76,6 @@ def admin_required(f):
     return decorated_function
 
 
-@auth_bp.route("/register", methods=["POST"])
 @auth_bp.route("/auth/register", methods=["POST"])
 def register():
     data = request.get_json(silent=True)
@@ -145,7 +144,6 @@ def register():
         "created_at": user.created_at.isoformat() if user.created_at else None
     }), 201
 
-@auth_bp.route("/login", methods=["POST"])
 @auth_bp.route("/auth/login", methods=["POST"])
 def login():
     data = request.get_json(silent=True)
@@ -198,7 +196,6 @@ def login():
 
 ALLOWED_PROFILE_FIELDS = {"email"}
 
-@auth_bp.route("/profile", methods=["GET"])
 @auth_bp.route("/auth/profile", methods=["GET"])
 @jwt_required
 def profile():
@@ -209,7 +206,6 @@ def profile():
         "created_at": user.created_at.isoformat() if user.created_at else None
     }), 200
 
-@auth_bp.route("/profile", methods=["PATCH"])
 @auth_bp.route("/auth/profile", methods=["PATCH"])
 @jwt_required
 def update_profile():
